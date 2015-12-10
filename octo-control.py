@@ -289,7 +289,7 @@ if __name__ == '__main__':
             if args.set_bed_temp < 0:
                 print('Bed temperature can\'t be negative')
             else:
-                octo_api.set_bed_temp(args.bedtemp)
+                octo_api.set_bed_temp(args.set_bed_temp)
 
         elif args.get_bed_temp:
             print(octo_api.get_bed_temp())
