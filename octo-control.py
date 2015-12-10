@@ -173,6 +173,13 @@ class OctoprintAPI:
                     return line[line.find(':')+1:line.find(',')].replace('"', '').strip()
         return ''
 
+    def send_gcode(self, gcode):
+        """
+        Sends one or multiple comma separated G-codes to the printer
+        :param gcode: G-Code to send as string or a list containing all the G-codes to send
+        """
+        r = self.s.post(self.base_address + '/api/printer/command', json={'commands': gcode})
+
     def get_extruder_target_temp(self):
         """
         Get the target extruder temperature in degrees celsius
@@ -219,8 +226,12 @@ if __name__ == '__main__':
         parser.add_argument('--elapsed-time', help='Gets the elapsed print time', action='store_true')
 
         parser.add_argument('--printing-file', help='Gets the name of the file being printed', action='store_true')
+        parser.add_argument('--send-gcode', help='Sends specified G-code/s to the printer. Multiple G-Codes can be'
+                                                 'specified', nargs='*', type=str, metavar=('GCODE'))
 
-        parser.add_argument('--set-bed-temp', help='Sets the bed temperature in degrees celsius', type=int)
+
+        parser.add_argument('--set-bed-temp', help='Sets the bed temperature in degrees celsius', type=int,
+                            metavar=('BED_TEMP'))
         parser.add_argument('--get-bed-temp', help='Gets the current bed temperature', action='store_true')
 
         parser.add_argument('--ext-temp', help='Gets the current extruder temperature in degrees celsius',
@@ -262,6 +273,9 @@ if __name__ == '__main__':
 
         elif args.printing_file:
             print(octo_api.get_file_printing())
+
+        elif args.send_gcode:
+            octo_api.send_gcode(args.send_gcode)
 
         # Extruder
         elif args.ext_temp:

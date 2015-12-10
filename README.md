@@ -13,9 +13,10 @@ usage: octo-control.py [-h] --apikey APIKEY --host HOST --port PORT
                        [--printer-connected] [--printer-status]
                        [--print-progress] [--total-time] [--left-time]
                        [--elapsed-time] [--printing-file]
-                       [--set-bed-temp SET_BED_TEMP] [--get-bed-temp]
-                       [--ext-temp] [--ext-target] [--pause] [--resume]
-                       [--start] [--cancel] [--version]
+                       [--send-gcode [GCODE [GCODE ...]]]
+                       [--set-bed-temp BED_TEMP] [--get-bed-temp] [--ext-temp]
+                       [--ext-target] [--pause] [--resume] [--start]
+                       [--cancel] [--version]
 
 optional arguments:
   -h, --help            show this help message and exit
@@ -31,7 +32,10 @@ optional arguments:
   --left-time           Gets the time left for the print to finish
   --elapsed-time        Gets the elapsed print time
   --printing-file       Gets the name of the file being printed
-  --set-bed-temp SET_BED_TEMP
+  --send-gcode [GCODE [GCODE ...]]
+                        Sends specified G-code/s to the printer. Multiple
+                        G-Codes can bespecified
+  --set-bed-temp BED_TEMP
                         Sets the bed temperature in degrees celsius
   --get-bed-temp        Gets the current bed temperature
   --ext-temp            Gets the current extruder temperature in degrees
@@ -44,3 +48,13 @@ optional arguments:
   --cancel              Cancel the current job
   --version             Reads Octoprint version
 ```
+
+## Examples
+
+* Send G-Code to printer:
+
+    `--apikey 6F383070189C47E98A557D046D50596D --host 192.168.0.153 --port 5000 --send-gcode "G0 Z2 F100"`
+
+* Send multiple G-Codes to printer:
+
+    `--apikey 6F383070189C47E98A557D046D50596D --host 192.168.0.153 --port 5000 --send-gcode "G0 Z2 F100" "G0 X10 F100"`
