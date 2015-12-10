@@ -14,6 +14,7 @@ usage: octo-control.py [-h] --apikey APIKEY --host HOST --port PORT
                        [--print-progress] [--total-time] [--left-time]
                        [--elapsed-time] [--printing-file]
                        [--send-gcode [GCODE [GCODE ...]]]
+                       [--select-file FILE_NAME FILE_LOCATION] [--print]
                        [--set-bed-temp BED_TEMP] [--get-bed-temp] [--ext-temp]
                        [--ext-target] [--pause] [--resume] [--start]
                        [--cancel] [--version]
@@ -34,7 +35,12 @@ optional arguments:
   --printing-file       Gets the name of the file being printed
   --send-gcode [GCODE [GCODE ...]]
                         Sends specified G-code/s to the printer. Multiple
-                        G-Codes can bespecified
+                        G-Codes can be specified
+  --select-file FILE_NAME FILE_LOCATION
+                        Selects an already uploaded file. FILE_LOCATION can be
+                        'local' or 'sdcard'
+  --print               When used with --select-file will also start printing
+                        the selected file
   --set-bed-temp BED_TEMP
                         Sets the bed temperature in degrees celsius
   --get-bed-temp        Gets the current bed temperature
@@ -58,3 +64,11 @@ optional arguments:
 * Send multiple G-Codes to printer:
 
     `--apikey 6F383070189C47E98A557D046D50596D --host 192.168.0.153 --port 5000 --send-gcode "G0 Z2 F100" "G0 X10 F100"`
+    
+* Select file:
+
+    `--apikey 6F383070189C47E98A557D046D50596D --host 192.168.0.153 --port 5000 --select-file my_print.gcode local`
+    
+* Select file and print it:
+
+    `--apikey 6F383070189C47E98A557D046D50596D --host 192.168.0.153 --port 5000 --select-file my_print.gcode local --print`

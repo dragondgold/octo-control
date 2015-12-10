@@ -176,9 +176,12 @@ class OctoprintAPI:
     def send_gcode(self, gcode):
         """
         Sends one or multiple comma separated G-codes to the printer
-        :param gcode: G-Code to send as string or a list containing all the G-codes to send
+        :param gcode: G-Code/s to send as a list containing all the G-codes to send
         """
-        r = self.s.post(self.base_address + '/api/printer/command', json={'commands': gcode})
+        self.s.post(self.base_address + '/api/printer/command', json={'commands': gcode})
+
+    def select_file(self, file_name, location, print):
+        self.s.post(self.base_address + '/api/files/' + location + '/'+ file_name, json={'command': 'select', 'print': print})
 
     def get_extruder_target_temp(self):
         """
@@ -226,8 +229,14 @@ if __name__ == '__main__':
         parser.add_argument('--elapsed-time', help='Gets the elapsed print time', action='store_true')
 
         parser.add_argument('--printing-file', help='Gets the name of the file being printed', action='store_true')
-        parser.add_argument('--send-gcode', help='Sends specified G-code/s to the printer. Multiple G-Codes can be'
+        parser.add_argument('--send-gcode', help='Sends specified G-code/s to the printer. Multiple G-Codes can be '
                                                  'specified', nargs='*', type=str, metavar=('GCODE'))
+
+        parser.add_argument('--select-file', help='Selects an already uploaded file. FILE_LOCATION can be'
+                                                  ' \'local\' or \'sdcard\'', type=str, nargs=2,
+                            metavar=('FILE_NAME', 'FILE_LOCATION'))
+        parser.add_argument('--print', help='When used with --select-file will also start printing the selected file',
+                            action='store_true')
 
 
         parser.add_argument('--set-bed-temp', help='Sets the bed temperature in degrees celsius', type=int,
@@ -276,6 +285,9 @@ if __name__ == '__main__':
 
         elif args.send_gcode:
             octo_api.send_gcode(args.send_gcode)
+
+        elif args.select_file:
+            octo_api.select_file(args.select_file[0], args.select_file[1], args.print)
 
         # Extruder
         elif args.ext_temp:
