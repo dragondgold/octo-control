@@ -180,8 +180,9 @@ class OctoprintAPI:
         """
         self.s.post(self.base_address + '/api/printer/command', json={'commands': gcode})
 
-    def select_file(self, file_name, location, print):
-        self.s.post(self.base_address + '/api/files/' + location + '/'+ file_name, json={'command': 'select', 'print': print})
+    def select_file(self, file_name, location, print_file):
+        self.s.post(self.base_address + '/api/files/' + location + '/'+ file_name,
+                    json={'command': 'select', 'print': print_file})
 
     def get_extruder_target_temp(self):
         """
