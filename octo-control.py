@@ -19,6 +19,35 @@ class OctoprintAPI:
         # Base address for all the requests
         self.base_address = 'http://' + address + ':' + str(port)
 
+    def connect_to_printer(self, port=None, baudrate=None, printer_profile=None, save=None, autoconnect=None):
+        """
+        Connects to the printer
+        :param port: [Optional] port where the printer is connected (ie: COMx in Windows, /dev/ttyXX in Unix systems).
+                if not specified the current selected port will be used or if no port is selected auto detection will
+                be used
+        :param baudrate: [Optional] baud-rate, if not specified the current baud-rate will be used ot if no baud-rate
+                is selected auto detection will be used
+        :param printer_profile: [Optional] printer profile to be used for the connection, if not specified the default
+                one will be used
+        :param save: [Optional] whether to save or not the connection settings
+        :param autoconnect: [Optional] whether to connect automatically or not on the next Ocotprint start
+        """
+        data = {'command': 'connect'}
+        if port is not None:
+            data['port'] = port
+        if baudrate is not None:
+            data['baudrate'] = baudrate
+        if printer_profile is not None:
+            data['printerProfile'] = printer_profile
+        if save is not None:
+            data['save'] = save
+        if autoconnect is not None:
+            data['autoconnect'] = autoconnect
+
+        r = self.s.post(self.base_address + '/api/connection', json=data)
+        if r.status_code != 204:
+            raise Exception("Error: {code} - {content}".format(code=r.status_code, content=r.content.decode('utf-8')))
+
     def is_printer_connected(self):
         """
         Checks if the printer is connected to the Octoprint server
@@ -295,6 +324,19 @@ if __name__ == '__main__':
         parser.add_argument('--printer-status', help='Gets the printer status (Operational, Disconnected, ...)',
                             action='store_true')
 
+        parser.add_argument('--connect', help='Connect to the printer. If no other connection parameter is specified '
+                                              'the default values in Octoprint will be used, see --printer-port,'
+                                              ' --baudrate, --profile, --save and --autoconnect', action='store_true')
+        parser.add_argument('--printer-port', help='Port where the printer is connected ie: /dev/tty02, COM2 and so on',
+                            type=str)
+        parser.add_argument('--baudrate', help='Baud-rate for the connection to the printer', type=int)
+        parser.add_argument('--profile', help='Printer profile to be used in the connection, the name here is the name'
+                                              'specified in the profile identifier, not the profile name', type=str)
+        parser.add_argument('--save', help='Save the connection settings when connecting', action='store_true',
+                            default=None)
+        parser.add_argument('--autoconnect', help='Connect automatically on the next Octoprint start',
+                            action='store_true', default=None)
+
         parser.add_argument('--print-progress', help='Gets the print progress as percentage', action='store_true')
         parser.add_argument('--total-time', help='Gets the total print time in seconds', action='store_true')
         parser.add_argument('--left-time', help='Gets the time left for the print to finish', action='store_true')
@@ -336,6 +378,10 @@ if __name__ == '__main__':
         # Printer options
         if args.printer_connected:
             run_and_handle(octo_api.is_printer_connected)
+
+        elif args.connect:
+            run_and_handle(octo_api.connect_to_printer, args.printer_port, args.baudrate, args.profile, args.save,
+                           args.autoconnect)
 
         elif args.printer_status:
             run_and_handle(octo_api.get_printer_status)
