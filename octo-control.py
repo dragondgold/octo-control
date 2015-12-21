@@ -34,68 +34,92 @@ class OctoprintAPI:
         Get the printer status
         :return: string with the printer status (Operational, Disconnected, ...). Returns an empty string
                     if there was an error trying to get the status.
+        :raise: TypeError when failed to get printer status
         """
-        data = self.s.get(self.base_address + '/api/printer').content.decode('utf-8').split('\n')
+        r = self.s.get(self.base_address + '/api/printer')
+        data = r.content.decode('utf-8').split('\n')
         for line in data:
             if 'text' in line:
                 # check if null
                 if 'null' in line:
-                    return ''
+                    raise Exception('Error trying to get printer status')
                 else:
                     return line[line.find(':')+1:line.find(',')]
-        return ''
+
+        # Default response from Octoprint
+        return data[0]
 
     def set_bed_temp(self, temp):
         """
         Set the bed temperature
         :param temp: desired bed temperature
         """
-        self.s.post(self.base_address + '/api/printer/bed', json={'command': 'target', 'target': temp})
+        r = self.s.post(self.base_address + '/api/printer/bed', json={'command': 'target', 'target': temp})
+        if r.status_code != 204:
+            raise Exception("Error: {code} - {content}".format(code=r.status_code, content=r.content.decode('utf-8')))
 
     def get_bed_temp(self):
         """
         Get the current bed temperature
         :return: current bed temperature. Returns -1 y there was some error getting the temperature.
         """
-        data = self.s.get(self.base_address + '/api/printer/bed').content.decode('utf-8').split('\n')
+        r = self.s.get(self.base_address + '/api/printer/bed')
+        if r.status_code != 200:
+            raise Exception("Error: {code} - {content}".format(code=r.status_code, content=r.content.decode('utf-8')))
+
+        data = r.content.decode('utf-8').split('\n')
         for line in data:
             if 'target' in line:
                 return int(float(line[line.find(':')+1:]))
-        return -1
+
+        raise Exception("Couldn't get bed temperature - " + r.content)
 
     def pause_job(self):
         """
         Pause the current job
         """
-        self.s.post(self.base_address + '/api/job', json={'command': 'pause'})
+        r = self.s.post(self.base_address + '/api/job', json={'command': 'pause'})
+        if r.status_code != 204:
+            raise Exception("Error: {code} - {content}".format(code=r.status_code, content=r.content.decode('utf-8')))
 
     def resume_job(self):
         """
         Resume the current job
         """
-        self.s.post(self.base_address + '/api/job', json={'command': 'pause'})
+        r = self.s.post(self.base_address + '/api/job', json={'command': 'pause'})
+        if r.status_code != 204:
+            raise Exception("Error: {code} - {content}".format(code=r.status_code, content=r.content.decode('utf-8')))
 
     def start_job(self):
         """
         Start printing with the currently selected file
         """
-        self.s.post(self.base_address + '/api/job', json={'command': 'start'})
+        r = self.s.post(self.base_address + '/api/job', json={'command': 'start'})
+        if r.status_code != 204:
+            raise Exception("Error: {code} - {content}".format(code=r.status_code, content=r.content.decode('utf-8')))
 
     def cancel_job(self):
         """
         Cancel the current job
         """
-        self.s.post(self.base_address + '/api/job', json={'command': 'cancel'})
+        r = self.s.post(self.base_address + '/api/job', json={'command': 'cancel'})
+        if r.status_code != 204:
+            raise Exception("Error: {code} - {content}".format(code=r.status_code, content=r.content.decode('utf-8')))
 
     def get_version(self):
         """
         Get Octoprint version
         :return: string with Octoprint version. It returns '0.0.0' if there was an error obtaining the version
         """
-        data = self.s.get(self.base_address + '/api/version').content.decode('utf-8').split('\n')
+        r = self.s.get(self.base_address + '/api/version')
+        if r.status_code != 200:
+            raise Exception("Error: {code} - {content}".format(code=r.status_code, content=r.content.decode('utf-8')))
+
+        data = r.content.decode('utf-8').split('\n')
         for line in data:
             if 'server' in line:
                 return line[line.find(':')+3:-1]
+
         return '0.0.0'
 
     def get_print_progress(self):
@@ -103,12 +127,16 @@ class OctoprintAPI:
         Get the print progress as a percentage
         :return: float indicating the current print progress
         """
-        data = self.s.get(self.base_address + '/api/job').content.decode('utf-8').split('\n')
+        r = self.s.get(self.base_address + '/api/job')
+        if r.status_code != 200:
+            raise Exception("Error: {code} - {content}".format(code=r.status_code, content=r.content.decode('utf-8')))
+
+        data = r.content.decode('utf-8').split('\n')
         for line in data:
             if 'completion' in line:
                 # check if null
                 if 'null' in line:
-                    return 0
+                    raise Exception('Error reading print progress')
                 else:
                     return int(float(line[line.find(':')+1:line.find(',')]))
         return 0
@@ -116,59 +144,75 @@ class OctoprintAPI:
     def get_total_print_time(self):
         """
         Get the total print time in seconds
-        :return: total print time in seconds. Returns -1 y there was some error getting the time.
+        :return: total print time in seconds
         """
-        data = self.s.get(self.base_address + '/api/job').content.decode('utf-8').split('\n')
+        r = self.s.get(self.base_address + '/api/job')
+        if r.status_code != 200:
+            raise Exception("Error: {code} - {content}".format(code=r.status_code, content=r.content.decode('utf-8')))
+
+        data = r.content.decode('utf-8').split('\n')
         for line in data:
             if 'estimatedPrintTime' in line:
                 # check if null
                 if 'null' in line:
-                    return -1
+                    raise Exception('Error reading total print time')
                 else:
                     return int(float(line[line.find(':')+1:line.find(',')]))
-        return -1
+        return 0
 
     def get_print_time_left(self):
         """
         Get the print time left of the current job in seconds
-        :return: print time left in seconds. Returns -1 y there was some error getting the time.
+        :return: print time left in seconds
         """
-        data = self.s.get(self.base_address + '/api/job').content.decode('utf-8').split('\n')
+        r = self.s.get(self.base_address + '/api/job')
+        if r.status_code != 200:
+            raise Exception("Error: {code} - {content}".format(code=r.status_code, content=r.content.decode('utf-8')))
+
+        data = r.content.decode('utf-8').split('\n')
         for line in data:
             if 'printTimeLeft' in line:
                 # check if null
                 if 'null' in line:
-                    return -1
+                    raise Exception('Error reading print time left')
                 else:
                     return int(float(line[line.find(':')+1:]))
-        return -1
+        return 0
 
     def get_elapsed_print_time(self):
         """
         Get the elapsed print time in seconds of the current job
-        :return: elapsed print time in seconds. Returns -1 y there was some error getting the time.
+        :return: elapsed print time in seconds
         """
-        data = self.s.get(self.base_address + '/api/job').content.decode('utf-8').split('\n')
+        r = self.s.get(self.base_address + '/api/job')
+        if r.status_code != 200:
+            raise Exception("Error: {code} - {content}".format(code=r.status_code, content=r.content.decode('utf-8')))
+
+        data = r.content.decode('utf-8').split('\n')
         for line in data:
             if 'printTime' in line:
                 # check if null
                 if 'null' in line:
-                    return -1
+                    raise Exception('Error reading elapsed print time')
                 else:
                     return int(float(line[line.find(':')+1:line.find(',')]))
-        return -1
+        return 0
 
     def get_file_printing(self):
         """
         Get the name of the current file being printed
-        :return: name of the file being printed. Returns an empty string if no file is being printed.
+        :return: name of the file being printed
         """
-        data = self.s.get(self.base_address + '/api/job').content.decode('utf-8').split('\n')
+        r = self.s.get(self.base_address + '/api/job')
+        if r.status_code != 200:
+            raise Exception("Error: {code} - {content}".format(code=r.status_code, content=r.content.decode('utf-8')))
+
+        data = r.content.decode('utf-8').split('\n')
         for line in data:
             if 'name' in line:
                 # check if null
                 if 'null' in line:
-                    return ''
+                    raise Exception('Error reading filename being printed')
                 else:
                     return line[line.find(':')+1:line.find(',')].replace('"', '').strip()
         return ''
@@ -178,36 +222,63 @@ class OctoprintAPI:
         Sends one or multiple comma separated G-codes to the printer
         :param gcode: G-Code/s to send as a list containing all the G-codes to send
         """
-        self.s.post(self.base_address + '/api/printer/command', json={'commands': gcode})
+        r = self.s.post(self.base_address + '/api/printer/command', json={'commands': gcode})
+        if r != 204:
+            raise Exception("Error: {code} - {content}".format(code=r.status_code, content=r.content.decode('utf-8')))
 
-    def select_file(self, file_name, location, print_file):
-        self.s.post(self.base_address + '/api/files/' + location + '/'+ file_name,
-                    json={'command': 'select', 'print': print_file})
+    def select_file(self, file_name):
+        r = self.s.post(self.base_address + '/api/files/local/' + file_name, json={'command': 'select', 'print': True})
+        if r.status_code != 200:
+            raise Exception("Error: {code} - {content}".format(code=r.status_code, content=r.content.decode('utf-8')))
 
     def get_extruder_target_temp(self):
         """
         Get the target extruder temperature in degrees celsius
-        :return: target extruder temperature in degrees celsius. Returns -1 y there was some error getting the temperature.
+        :return: target extruder temperature in degrees celsius
         """
-        data = self.s.get(self.base_address + '/api/printer/tool').content.decode('utf-8').split('\n')
+        r = self.s.get(self.base_address + '/api/printer/tool')
+        if r.status_code != 200:
+            raise Exception("Error: {code} - {content}".format(code=r.status_code, content=r.content.decode('utf-8')))
+
+        data = r.content.decode('utf-8').split('\n')
         for line in data:
             if 'target' in line:
                 if 'null' in line:
-                    return -1
+                    raise Exception('Error retrieving extruder temperature')
                 else:
                     return int( round(float(line[line.find(':')+1:line.find(',')]), 0) )
-        return -1
+        return 0
 
     def get_extruder_current_temp(self):
         """
         Get the current extruder temperature in degrees celsius
-        :return: current extruder temperature in degrees celsius. Returns -1 y there was some error getting the temperature.
+        :return: current extruder temperature in degrees celsius
         """
-        data = self.s.get(self.base_address + '/api/printer/tool').content.decode('utf-8').split('\n')
+        r = self.s.get(self.base_address + '/api/printer/tool')
+        if r.status_code != 200:
+            raise Exception("Error: {code} - {content}".format(code=r.status_code, content=r.content.decode('utf-8')))
+
+        data = r.content.decode('utf-8').split('\n')
         for line in data:
             if 'actual' in line:
                 return int( round(float(line[line.find(':')+1:line.find(',')]), 0) )
-        return -1
+        return 0
+
+
+def run_and_handle(method, *_args):
+    """
+    Just a clean way to call any function and print the returned value to 'stdout' if valid or print the error message to
+        to 'stderr'
+    :param method: function to execute
+    :param _args: arguments to pass to the function
+    :return: None
+    """
+    try:
+        result = method(*_args)
+        if result is not None:
+            print(result)
+    except Exception as e:
+        print(str(e), file=sys.stderr)
 
 if __name__ == '__main__':
     # First, check if we have any arguments
@@ -234,8 +305,8 @@ if __name__ == '__main__':
                                                  'specified', nargs='*', type=str, metavar=('GCODE'))
 
         parser.add_argument('--select-file', help='Selects an already uploaded file. FILE_LOCATION can be'
-                                                  ' \'local\' or \'sdcard\'', type=str, nargs=2,
-                            metavar=('FILE_NAME', 'FILE_LOCATION'))
+                                                  ' \'local\' or \'sdcard\'', type=str, nargs=1,
+                            metavar=('FILE_NAME'))
         parser.add_argument('--print', help='When used with --select-file will also start printing the selected file',
                             action='store_true')
 
@@ -264,62 +335,62 @@ if __name__ == '__main__':
 
         # Printer options
         if args.printer_connected:
-            print(octo_api.is_printer_connected())
+            run_and_handle(octo_api.is_printer_connected)
 
         elif args.printer_status:
-            print(octo_api.get_printer_status())
+            run_and_handle(octo_api.get_printer_status)
 
         elif args.print_progress:
-            print(octo_api.get_print_progress())
+            run_and_handle(octo_api.get_print_progress)
 
         elif args.total_time:
-            print(octo_api.get_total_print_time())
+            run_and_handle(octo_api.get_total_print_time)
 
         elif args.left_time:
-            print(octo_api.get_print_time_left())
+            run_and_handle(octo_api.get_print_time_left)
 
         elif args.elapsed_time:
-            print(octo_api.get_elapsed_print_time())
+            run_and_handle(octo_api.get_elapsed_print_time)
 
         elif args.printing_file:
-            print(octo_api.get_file_printing())
+            run_and_handle(octo_api.get_file_printing)
 
         elif args.send_gcode:
-            octo_api.send_gcode(args.send_gcode)
+            run_and_handle(octo_api.send_gcode, args.send_gcode)
 
         elif args.select_file:
-            octo_api.select_file(args.select_file[0], args.select_file[1], args.print)
+            run_and_handle(octo_api.select_file, args.select_file[0])
 
         # Extruder
         elif args.ext_temp:
-            print(octo_api.get_extruder_current_temp())
+            run_and_handle(octo_api.get_extruder_current_temp)
 
         elif args.ext_target:
-            print(octo_api.get_extruder_target_temp())
+            run_and_handle(octo_api.get_extruder_target_temp)
 
         # Bed options
         elif args.set_bed_temp:
             if args.set_bed_temp < 0:
-                print('Bed temperature can\'t be negative')
+                print('Bed temperature can\'t be negative', file=sys.stderr)
             else:
-                octo_api.set_bed_temp(args.set_bed_temp)
+                run_and_handle(octo_api.set_bed_temp, args.set_bed_temp)
 
         elif args.get_bed_temp:
-            print(octo_api.get_bed_temp())
+            run_and_handle(octo_api.get_bed_temp)
 
         # Job options
         elif args.pause:
-            octo_api.pause_job()
+            run_and_handle(octo_api.pause_job)
 
         elif args.resume:
-            octo_api.resume_job()
+            run_and_handle(octo_api.resume_job)
 
         elif args.start:
-            octo_api.start_job()
+            run_and_handle(octo_api.start_job)
 
         elif args.cancel:
-            octo_api.cancel_job()
+            run_and_handle(octo_api.cancel_job)
 
         # Other options
         elif args.version:
-            print(octo_api.get_version())
+            run_and_handle(octo_api.get_version)
