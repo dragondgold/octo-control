@@ -90,6 +90,8 @@ optional arguments:
     
 * Connect to printer:
 
-    `--apikey <API KEY> --host 192.168.0.153 --port 5000 --connect`
-    `--apikey <API KEY> --host 192.168.0.153 --port 5000 --connect --profile "micro_3d`
-    `--apikey <API KEY> --host 192.168.0.153 --port 5000 --connect --profile "micro_3d" --baudrate 9600`
+    `--apikey [API KEY] --host 192.168.0.153 --port 5000 --connect`
+    
+    `--apikey [API KEY] --host 192.168.0.153 --port 5000 --connect --profile "micro_3d`
+    
+    `--apikey [API KEY] --host 192.168.0.153 --port 5000 --connect --profile "micro_3d" --baudrate 9600`
