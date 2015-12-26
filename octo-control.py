@@ -101,7 +101,7 @@ class OctoprintAPI:
             if 'target' in line:
                 return int(float(line[line.find(':')+1:]))
 
-        raise Exception("Couldn't get bed temperature - " + r.content)
+        raise Exception("Error getting bed temperature - " + r.content)
 
     def pause_job(self):
         """
@@ -417,7 +417,7 @@ if __name__ == '__main__':
         # Bed options
         elif args.set_bed_temp:
             if args.set_bed_temp < 0:
-                print('Bed temperature can\'t be negative', file=sys.stderr)
+                print('Error, bed temperature can\'t be negative', file=sys.stderr)
             else:
                 run_and_handle(octo_api.set_bed_temp, args.set_bed_temp)
 
