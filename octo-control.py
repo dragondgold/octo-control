@@ -367,7 +367,8 @@ if __name__ == '__main__':
         parser.add_argument('--start', help='Starts printing with the currently selected file', action='store_true')
         parser.add_argument('--cancel', help='Cancel the current job', action='store_true')
 
-        parser.add_argument('--version', help='Reads Octoprint version', action='store_true')
+        parser.add_argument('--octo-version', help='Reads Octoprint version', action='store_true')
+        parser.add_argument('--version', help='Get script version', action='store_true')
 
         # Parse the arguments!
         args = parser.parse_args()
@@ -438,5 +439,8 @@ if __name__ == '__main__':
             run_and_handle(octo_api.cancel_job)
 
         # Other options
-        elif args.version:
+        elif args.octo_version:
             run_and_handle(octo_api.get_version)
+
+        elif args.version:
+            print('1.0.0')

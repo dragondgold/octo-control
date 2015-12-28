@@ -19,7 +19,7 @@ usage: octo-control.py [-h] --apikey APIKEY --host HOST --port PORT
                        [--select-file FILE_NAME] [--print]
                        [--set-bed-temp BED_TEMP] [--get-bed-temp] [--ext-temp]
                        [--ext-target] [--pause] [--resume] [--start]
-                       [--cancel] [--version]
+                       [--cancel] [--octo-version] [--version]
 
 optional arguments:
   -h, --help            show this help message and exit
@@ -67,7 +67,8 @@ optional arguments:
   --resume              Resume the current job
   --start               Starts printing with the currently selected file
   --cancel              Cancel the current job
-  --version             Reads Octoprint version
+  --octo-version        Reads Octoprint version
+  --version             Get script version
 ```
 
 ## Examples
