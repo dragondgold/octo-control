@@ -252,7 +252,7 @@ class OctoprintAPI:
         :param gcode: G-Code/s to send as a list containing all the G-codes to send
         """
         r = self.s.post(self.base_address + '/api/printer/command', json={'commands': gcode})
-        if r != 204:
+        if r.status_code != 204:
             raise Exception("Error: {code} - {content}".format(code=r.status_code, content=r.content.decode('utf-8')))
 
     def select_file(self, file_name):
